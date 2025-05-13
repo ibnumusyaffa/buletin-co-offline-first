@@ -1,24 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
-import "@blocknote/core/fonts/inter.css";
-import { BlockNoteView } from "@blocknote/mantine";
-import "@blocknote/mantine/style.css";
+import { Editor } from "@/components/editor";
 import { type Post, db } from "@/db";
-import {
-	BlockNoteEditor,
-	type PartialBlock,
-} from "@blocknote/core";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ActionIcon, Loader } from "@mantine/core";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowLeftIcon } from "lucide-react";
 
-export const Route = createFileRoute('/posts/$id')({
-  component: RouteComponent,
-})
+export const Route = createFileRoute("/posts/$id")({
+	component: RouteComponent,
+});
 
 function RouteComponent() {
-	const isDirty = useRef(false);
+	const params = Route.useParams();
 
-  const params = Route.useParams()
-
-  const newId = params.id
+	const newId = params.id;
 
 	const { isLoading, error, data } = db.useQuery({
 		posts: {
@@ -34,73 +27,67 @@ function RouteComponent() {
 		db.transact(
 			db.tx.posts[newId].update({
 				...data,
-				...(isDirty.current ? {} : { createdAt: Date.now() }),
 			}),
 		);
 	}
-
-	const [initialContent, setInitialContent] = useState<
-		PartialBlock[] | undefined | "loading"
-	>("loading");
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-    console.log("data?.posts[0]?.content", data?.posts[0]?.content)
-    if(initialContent === "loading" || initialContent === undefined) {
-      const content = data?.posts[0]?.content;
-      const parsedContent = content
-        ? (JSON.parse(content) as PartialBlock[])
-        : undefined;
-      setInitialContent(parsedContent);
-    }
-	}, [data?.posts[0]?.content]);
-
-	const editor = useMemo(() => {
-		if (initialContent === "loading") {
-			return undefined;
-		}
-		return BlockNoteEditor.create({ initialContent });
-	}, [initialContent]);
-
-	if (isLoading || editor === undefined) {
-		return <div>Loading...</div>;
+	const navigate = useNavigate();
+	if (isLoading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<Loader size="lg" />
+			</div>
+		);
 	}
 
 	if (error) {
-		return <div>Error: {error.message}</div>;
+		return (
+			<div className="flex justify-center items-center h-screen">
+				Error: {error.message}
+			</div>
+		);
 	}
-
 	const title = data?.posts[0]?.title || "";
 	const subtitle = data?.posts[0]?.subtitle || "";
 
+	
+
 	return (
-		<div className="min-h-screen flex flex-col items-center py-12">
-			<div className="w-full max-w-7xl border border-gray-200 py-10">
-				<div className="ml-13">
-					<input
-						type="text"
-						placeholder="Title"
-						className="w-full text-2xl font-bold mb-2 border-none outline-none bg-transparent placeholder-gray-400"
-						value={title}
-						onChange={(e) => onChange({ title: e.target.value })}
-					/>
-					<input
-						type="text"
-						placeholder="Subtitle"
-						className="w-full text-lg font-medium mb-6 border-none outline-none bg-transparent placeholder-gray-400 text-gray-500"
-						value={subtitle}
-						onChange={(e) => onChange({ subtitle: e.target.value })}
+		<div className="min-h-screen flex flex-col items-center p-10">
+			<div className="flex justify-between w-full">
+				<ActionIcon
+					onClick={() => navigate({ to: "/" })}
+					variant="default"
+					size="xl"
+					radius="xl"
+				>
+					<ArrowLeftIcon className="w-5 h-5" />
+				</ActionIcon>
+			</div>
+			<div className="w-full max-w-3xl">
+				<div>
+					<div className="ml-13">
+						<input
+							placeholder="Title"
+							className="w-full !text-3xl !font-bold mb-2 border-none outline-none bg-transparent placeholder-gray-400 resize-none overflow-hidden"
+							value={title}
+							onChange={(e) => onChange({ title: e.target.value })}
+						/>
+						<input
+							placeholder="Subtitle"
+							className="w-full !text-lg !font-medium mb-6 border-none outline-none bg-transparent placeholder-gray-400 text-gray-500 resize-none overflow-hidden"
+							value={subtitle}
+							onChange={(e) => onChange({ subtitle: e.target.value })}
+						/>
+					</div>
+
+					<Editor
+						initialValue={data?.posts[0]?.content || ""}
+						onChange={(data) => {
+							onChange({ content: data });
+						}}
 					/>
 				</div>
-
-				<BlockNoteView
-					onChange={() => {
-						onChange({ content: JSON.stringify(editor.document) });
-					}}
-					editor={editor}
-				/>
 			</div>
 		</div>
 	);
 }
-
