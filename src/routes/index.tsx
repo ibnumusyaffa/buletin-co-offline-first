@@ -1,5 +1,5 @@
 import { type Post, db } from "@/db";
-import { ActionIcon, Badge, Button, Group, Menu, Modal } from "@mantine/core";
+import { ActionIcon, Badge, Button, Group, Loader, Menu, Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
@@ -16,10 +16,19 @@ function RouteComponent() {
 	const { isLoading, error, data } = db.useQuery({ posts: {} });
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<Loader size="lg" />
+			</div>
+		);
 	}
+
 	if (error) {
-		return <div className="text-red-500 p-4">Error: {error.message}</div>;
+		return (
+			<div className="flex justify-center items-center h-screen">
+				Error: {error.message}
+			</div>
+		);
 	}
 	const { posts } = data;
 	return (
