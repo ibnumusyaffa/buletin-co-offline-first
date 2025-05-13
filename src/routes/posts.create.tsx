@@ -74,13 +74,13 @@ function RouteComponent() {
 					<div className="ml-13">
 						<input
 							placeholder="Title"
-							className="w-full text-3xl font-bold mb-2 border-none outline-none bg-transparent placeholder-gray-400 resize-none overflow-hidden"
+							className="w-full !text-3xl !font-bold mb-2 border-none outline-none bg-transparent placeholder-gray-400 resize-none overflow-hidden"
 							value={title}
 							onChange={(e) => onChange({ title: e.target.value })}
 						/>
 						<input
 							placeholder="Subtitle"
-							className="w-full text-lg font-medium mb-6 border-none outline-none bg-transparent placeholder-gray-400 text-gray-500 resize-none overflow-hidden"
+							className="w-full !text-lg !font-medium mb-6 border-none outline-none bg-transparent placeholder-gray-400 text-gray-500 resize-none overflow-hidden"
 							value={subtitle}
 							onChange={(e) => onChange({ subtitle: e.target.value })}
 						/>
